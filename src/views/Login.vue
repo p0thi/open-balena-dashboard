@@ -78,7 +78,7 @@ export default {
     return {
       email: undefined,
       rememberEmail: false,
-      password: 'uCLm4_1',
+      password: undefined,
       api: undefined
     }
   }
