@@ -1,17 +1,36 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <Login v-if="getLoggedInStatus !== 'logged_in'"></Login>
+    <Overview v-else></Overview>
   </div>
 </template>
-
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Login from "@/views/Login";
+import {mapActions, mapGetters} from "vuex";
+import Overview from "@/views/Overview";
 
 export default {
-  name: 'App',
   components: {
-    HelloWorld
+    Login,
+    Overview
+  },
+  created() {
+    this.checkLoginStatus()
+  },
+  methods: {
+    ...mapActions({
+      checkLoginStatus: 'checkLoginStatus'
+    })
+  },
+  computed: {
+    ...mapGetters({
+      authToken: 'authToken',
+      getLoggedInStatus: 'getLoggedInStatus'
+    })
+  },
+  data () {
+    return {
+    }
   }
 }
 </script>
@@ -23,6 +42,10 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+}
+.sidebar-descriptor {
+  padding: 1rem;
+  font-weight: bold;
+  color: rgba(var(--vs-text), 1);
 }
 </style>
