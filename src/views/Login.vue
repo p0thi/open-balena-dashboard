@@ -1,7 +1,7 @@
 <template>
   <div class="grid">
     <vs-row justify="center">
-      <vs-col w="2">
+      <vs-col lg="2" sm="6" xs="12">
 
         <vs-card type="1">
           <template #title>
