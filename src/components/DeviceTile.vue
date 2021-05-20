@@ -14,7 +14,7 @@
         <vs-button @click="restartDevice">Restart</vs-button>
       </template>
     </vs-card>
-    <vs-dialog overflow-hidden full-screen v-model="showDialog">
+    <vs-dialog overflow-hidden scroll full-screen v-model="showDialog">
       <template #header>
         <h4>{{ details['device_name'] }}</h4>
         <vs-button @click="showEditNameDialog = !showEditNameDialog" icon flat>
@@ -193,6 +193,9 @@ export default {
 </script>
 
 <style lang="scss">
+.vs-dialog--scroll .vs-dialog__content {
+  max-height: 80vh !important;
+}
 .service-list-name {
   color: white;
   font-size: 1.2rem;
