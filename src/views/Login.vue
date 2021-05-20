@@ -39,7 +39,6 @@ export default {
   },
   methods: {
     ...mapMutations({
-      setToken: 'setToken',
       setApiUrl: 'setApiUrl'
     }),
     ...mapActions({
