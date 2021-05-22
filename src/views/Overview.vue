@@ -53,7 +53,7 @@ export default {
   name: "Overview",
   mounted() {
     this.fetchDeviceTypes()
-    this.fetchingTimer = setInterval(this.fetchApplications, 5000);
+    this.fetchingTimer = setInterval(this.fetchApplications, 45000);
     this.fetchApplications()
   },
   destroyed() {
@@ -63,7 +63,8 @@ export default {
     ...mapActions({
       fetchApplications: 'fetchApplications',
       fetchDeviceTypes: 'fetchDeviceTypes',
-      checkLoginStatus: 'checkLoginStatus'
+      checkLoginStatus: 'checkLoginStatus',
+      fetchDevicesOfSelectedApp: 'fetchDevicesOfSelectedApp'
     }),
     ...mapMutations({
       setLoggedInStatus: 'setLoggedInStatus'

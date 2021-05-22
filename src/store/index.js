@@ -9,7 +9,9 @@ export default new Vuex.Store({
     api_url: null,
     applications: null,
     deviceTypes: null,
-    selectedApp: null
+    selectedApp: null,
+    selectedAppDevices: null,
+    selectedDevice: null
   },
   mutations: {
     setLoggedInStatus(state, value) {
@@ -31,8 +33,13 @@ export default new Vuex.Store({
       state.deviceTypes = types
     },
     setSelectedApp(state, app) {
-      Vue.set(state, 'selectedApp', app.uuid)
-      // state.selectedApp = app.uuid
+      Vue.set(state, 'selectedApp', app)
+    },
+    setSelectedAppDevices(state, devices) {
+      Vue.set(state, 'selectedAppDevices', devices)
+    },
+    setSelectedDevice(state, device) {
+      Vue.set(state, 'selectedDevice', device)
     }
   },
   getters: {
@@ -47,34 +54,50 @@ export default new Vuex.Store({
     },
     getSelectedApp: state => {
       // return state.selectedApp
-      return state.applications?.find(item => item.uuid === state.selectedApp)
+      return state.applications?.find(item => item.uuid === state.selectedApp.uuid)
+    },
+    getSelectedAppDevices: state => {
+      return state .selectedAppDevices
     },
     getApiUrl: state => {
       return state.api_url
+    },
+    getSelectedDevice: state => {
+      return state.selectedDevice
     }
   },
   actions: {
     checkLoginStatus({commit}) {
-      console.log('test 1', this.$app.$balena)
       this.$app.$balena?.auth.isLoggedIn().then(val => {
-        console.log('test 2')
         commit('setLoggedInStatus', val)
       })
     },
     fetchApplications({commit}) {
-      console.log(this.$app.$balena)
-      this.$app.$balena?.models.application.getAllWithDeviceServiceDetails({
-            $expand: {
-              is_for__device_type: {
-                $expand: ['is_of__cpu_architecture']
-              }
-            }
-          }).then(resp => {
+      this.$app.$balena?.models.application.getAll({
+        $expand: {
+          is_for__device_type: {
+            $expand: ['is_of__cpu_architecture']
+          },
+          owns__device: {
+            $select: ['overall_status', 'device_name']
+          }
+        }
+      }).then(resp => {
         commit('setApplications', resp)
-            // resp.forEach(item => {
-            //   dispatch('fetchApplicationDetails', item)
-            // })
-        console.log("apps2", resp)
+      })
+    },
+    fetchDevicesOfSelectedApp({state, commit}) {
+      if (!state.selectedApp) return
+      this.$app.$balena?.models.device.getAllByApplication(state.selectedApp.id, {
+
+      }).then(res => {
+        commit('setSelectedAppDevices', res)
+      })
+    },
+    fetchDevice({commit}, uuid) {
+      this.$app.$balena?.models.device.getWithServiceDetails(uuid, {}).then(res => {
+        console.log('fetching device...')
+        commit('setSelectedDevice', res)
       })
     },
     fetchDeviceTypes({commit, state}) {

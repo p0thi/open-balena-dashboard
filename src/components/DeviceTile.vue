@@ -1,6 +1,6 @@
 <template>
   <div class="center">
-    <vs-card @click="showDialog = !showDialog">
+    <vs-card @click="showDetailsDialog = !showDetailsDialog">
       <template #title>
         <h2>{{ details['device_name'] }}</h2>
       </template>
@@ -14,14 +14,14 @@
         <vs-button @click="restartDevice">Restart</vs-button>
       </template>
     </vs-card>
-    <vs-dialog overflow-hidden scroll full-screen v-model="showDialog">
+    <vs-dialog overflow-hidden scroll full-screen v-model="showDetailsDialog">
       <template #header>
         <h4>{{ details['device_name'] }}</h4>
         <vs-button @click="showEditNameDialog = !showEditNameDialog" icon flat>
           <i class="bx bx-edit"></i>
         </vs-button>
       </template>
-      <div>
+      <div v-if="getSelectedDevice">
         <vs-row>
           <vs-col lg="6" sm="12">
             <vs-table>
@@ -33,7 +33,7 @@
                 </vs-tr>
               </template>
               <template #tbody>
-                <vs-tr v-for="(service, name, i) in details['current_services']" :key="i" :data="service[0]">
+                <vs-tr v-for="(service, name, i) in getSelectedDevice['current_services']" :key="i" :data="service[0]">
                   <vs-td>
                     <div class="service-list-name" :style="`background-color: ${colors[service[0]['service_id']]}`">
                       {{name}}
@@ -55,7 +55,6 @@
                 </vs-tr>
               </template>
             </vs-table>
-            <div v-for="(name, service, i) in details['current_services']" :key="i" >{{service[0].status}}</div>
           </vs-col>
           <vs-col lg="6" sm="12">
             <div class="hardware-stats">
@@ -64,40 +63,40 @@
                 <vs-col lg="3" sm="6" xs="12">
                   <div class="hardware-stats-text">
                     <span>CPU</span>
-                    <span>{{details['cpu_usage']}}%</span>
+                    <span>{{getSelectedDevice['cpu_usage']}}%</span>
                   </div>
                   <div class="progress-background">
-                    <div class="progress-status" :style="`width: ${details['cpu_usage']}%`"></div>
+                    <div class="progress-status" :style="`width: ${getSelectedDevice['cpu_usage']}%`"></div>
                   </div>
                 </vs-col>
 
                 <vs-col lg="3" sm="6" xs="12">
                   <div class="hardware-stats-text">
                     <span>Temperature</span>
-                    <span>~{{details['cpu_temp']}}°C</span>
+                    <span>~{{getSelectedDevice['cpu_temp']}}°C</span>
                   </div>
                   <div class="progress-background">
-                    <div class="progress-status" :style="`width: ${details['cpu_temp']}%`"></div>
+                    <div class="progress-status" :style="`width: ${getSelectedDevice['cpu_temp']}%`"></div>
                   </div>
                 </vs-col>
 
                 <vs-col lg="3" sm="6" xs="12">
                   <div class="hardware-stats-text">
                     <span>Memory</span>
-                    <span>{{details['memory_usage']}} MB / {{(details['memory_total'] / 1000).toFixed(1)}} GB</span>
+                    <span>{{getSelectedDevice['memory_usage']}} MB / {{(getSelectedDevice['memory_total'] / 1000).toFixed(1)}} GB</span>
                   </div>
                   <div class="progress-background">
-                    <div class="progress-status" :style="`width: ${details['memory_usage'] / details['memory_total'] * 100}%`"></div>
+                    <div class="progress-status" :style="`width: ${getSelectedDevice['memory_usage'] / getSelectedDevice['memory_total'] * 100}%`"></div>
                   </div>
                 </vs-col>
 
                 <vs-col lg="3" sm="6" xs="12">
                   <div class="hardware-stats-text">
                     <span>Storage</span>
-                    <span>{{(details['storage_usage'] / 1000).toFixed(1)}} GB/{{(details['storage_total'] / 1000).toFixed(1)}} GB</span>
+                    <span>{{(getSelectedDevice['storage_usage'] / 1000).toFixed(1)}} GB/{{(getSelectedDevice['storage_total'] / 1000).toFixed(1)}} GB</span>
                   </div>
                   <div class="progress-background">
-                    <div class="progress-status" :style="`width: ${details['storage_usage'] / details['storage_total'] * 100}%`"></div>
+                    <div class="progress-status" :style="`width: ${getSelectedDevice['storage_usage'] / getSelectedDevice['storage_total'] * 100}%`"></div>
                   </div>
                 </vs-col>
 
@@ -123,19 +122,21 @@
 </template>
 
 <script>
+import {mapActions, mapGetters, mapMutations} from "vuex";
+
 export default {
   name: "DeviceTile",
+  watch: {
+    showDetailsDialog (newVal) {
+      if (newVal) {
+        this.startShowingDetails()
+      }
+      else {
+        this.stopShowingDetails()
+      }
+    }
+  },
   mounted() {
-    console.log('services', )
-    this.$balena?.logs.subscribe(this.details.uuid, {count: 150}).then(logger => {
-      this.logger = logger
-      console.log('logger created')
-      logger.on('line', line => {
-        if (this.$refs.logContainer)
-          this.$refs.logContainer.scrollTop = this.$refs.logContainer.scrollHeight
-        this.logs.push(line)
-      })
-    })
   },
   updated() {
     if (this.$refs.logContainer)
@@ -145,6 +146,32 @@ export default {
     this.logger?.unsubscribe()
   },
   methods: {
+    ...mapActions({
+      fetchDevice: 'fetchDevice',
+    }),
+    ...mapMutations({
+      setSelectedDevice: 'setSelectedDevice'
+    }),
+    startShowingDetails() {
+      this.setSelectedDevice(null)
+      this.interval = setInterval(() => {
+        this.fetchDevice(this.details.uuid)
+      }, 5000)
+      this.fetchDevice(this.details.uuid)
+      this.logs = []
+      this.$balena?.logs.subscribe(this.details.uuid, {count: 150}).then(logger => {
+        this.logger = logger
+        logger.on('line', line => {
+          if (this.$refs.logContainer)
+            this.$refs.logContainer.scrollTop = this.$refs.logContainer.scrollHeight
+          this.logs.push(line)
+        })
+      })
+    },
+    stopShowingDetails() {
+      this.logger?.unsubscribe()
+      clearInterval(this.interval)
+    },
     restartDevice () {
       for (const value of Object.values(this.details['current_services'])) {
         for (const service of value) {
@@ -162,7 +189,7 @@ export default {
       this.$balena.models.device.restartService(this.details.uuid, imageId)
     },
     getServiceNameByServiceId(id) {
-      for (const [key, value] of Object.entries(this.details['current_services'])) {
+      for (const [key, value] of Object.entries(this.getSelectedDevice['current_services'])) {
         for (const service of value) {
           if (service['service_id'] === id) {
             return key
@@ -177,12 +204,18 @@ export default {
       })
     }
   },
+  computed: {
+    ...mapGetters({
+      getSelectedDevice: 'getSelectedDevice'
+    })
+  },
   props: {
     details: {required: true}
   },
   data () {
     return {
-      showDialog: false,
+      interval: undefined,
+      showDetailsDialog: false,
       showEditNameDialog: false,
       logs: [],
       logger: undefined,
