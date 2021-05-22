@@ -1,6 +1,10 @@
 <template>
-  <div v-if="!!getSelectedApp">
-    <DeviceTile v-for="device in sortedDevices" :key="device.uuid" :details="device"></DeviceTile>
+  <div v-if="!!getSelectedApp" class="grid">
+    <vs-row>
+      <vs-col lg="4" sm="6" xs="12" vs-justify="center" vs-align="center" v-for="device in sortedDevices" :key="device.uuid">
+        <DeviceTile :details="device"></DeviceTile>
+      </vs-col>
+    </vs-row>
   </div>
   <div v-else></div>
 </template>

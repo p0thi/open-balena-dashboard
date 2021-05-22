@@ -10,7 +10,7 @@
           <template #text>
             <div class="center content-inputs">
               <vs-input v-model="email" label-placeholder="E-Mail" />
-              <vs-input v-model="password" type="password" label-placeholder="Password" />
+              <vs-input @keypress.enter="login" v-model="password" type="password" label-placeholder="Password" />
               <vs-input v-model="api" type="url" label-placeholder="API Url" />
             </div>
           </template>
@@ -39,7 +39,8 @@ export default {
   },
   methods: {
     ...mapMutations({
-      setApiUrl: 'setApiUrl'
+      setApiUrl: 'setApiUrl',
+      setLoggedInStatus: 'setLoggedInStatus'
     }),
     ...mapActions({
       checkLoginStatus: 'checkLoginStatus'
@@ -61,7 +62,7 @@ export default {
 
       this.$balena?.auth.login({email: this.email, password: this.password}).then(() => {
         this.setApiUrl(this.api)
-        this.checkLoginStatus()
+        this.setLoggedInStatus(true)
         this.$balena?.models.application.getAllWithDeviceServiceDetails().then(resp => {
           console.log("apps", resp)
         })

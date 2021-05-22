@@ -36,6 +36,15 @@ const app = new Vue({
       isBrowser: true,
       debug: true
     })
+    balena.interceptors.push({
+      responseError (error) {
+        console.log('response error', error)
+        balena.auth.whoami().then(res => {
+          console.log('res', res)
+        })
+        throw error
+      }
+    })
     Vue.prototype.$balena = balena
     console.log(this)
   },

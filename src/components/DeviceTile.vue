@@ -1,5 +1,5 @@
 <template>
-  <div class="center">
+  <div>
     <vs-card @click="showDetailsDialog = !showDetailsDialog">
       <template #title>
         <h2>{{ details['device_name'] }}</h2>
@@ -22,7 +22,15 @@
         </vs-button>
       </template>
       <div v-if="getSelectedDevice">
-        <vs-row>
+        <vs-navbar id="device-details-navbar" v-model="navbarItem">
+          <vs-navbar-item :active="navbarItem === `${details.uuid}settings`" :id="`${details.uuid}settings`">
+            Settings
+          </vs-navbar-item>
+          <vs-navbar-item :active="navbarItem === `${details.uuid}env`" :id="`${details.uuid}env`">
+            Environment Variables
+          </vs-navbar-item>
+        </vs-navbar>
+        <vs-row v-if="navbarItem === `${details.uuid}settings`">
           <vs-col lg="6" sm="12">
             <vs-table>
               <template #thead>
@@ -112,6 +120,59 @@
             </div>
           </vs-col>
         </vs-row>
+        <vs-row v-else-if="navbarItem === `${details.uuid}env`">
+          <vs-col>
+            <vs-table striped>
+              <template #thead>
+                <vs-tr>
+                  <vs-th>
+                    Name
+                  </vs-th>
+                  <vs-th>
+                    Value
+                  </vs-th>
+                  <vs-th>
+                    Actions
+                  </vs-th>
+                  <vs-th>
+                    Created At
+                  </vs-th>
+                  <vs-th>
+                    Last Modified At
+                  </vs-th>
+                </vs-tr>
+              </template>
+              <template #tbody>
+                <vs-tr v-for="envVar in sortedEnvVars" :key="envVar.id" :data="envVar">
+                  <vs-td>{{envVar.name}}</vs-td>
+                  <vs-td edit @click="envEditObject.edit = envVar; envEditObject.editProp = 'value'; envEditObject.editActive = true">
+                    {{envVar.value}}
+                  </vs-td>
+                  <vs-td>
+                    <vs-button @click="removeEnv(envVar)" icon flat><i class="bx bx-trash"></i></vs-button>
+                  </vs-td>
+                  <vs-td>
+                    {{envVar['created_at'] | moment('DD.MM.YYYY - HH:mm:ss')}}
+                  </vs-td>
+                  <vs-td>
+                    {{envVar['modified_at'] | moment('DD.MM.YYYY - HH:mm:ss')}}
+                  </vs-td>
+                </vs-tr>
+                <vs-tr>
+                  <vs-td><vs-input v-model="newEnvObject.name" label-placeholder="New variable name"></vs-input></vs-td>
+                  <vs-td><vs-input v-model="newEnvObject.value" label-placeholder="New variable value"></vs-input></vs-td>
+                  <vs-td><vs-button @click="saveNewEnv" icon flat><i class="bx bx-save"></i><span>Speichern</span></vs-button></vs-td>
+                </vs-tr>
+              </template>
+            </vs-table>
+            <vs-dialog blur v-model="envEditObject.editActive">
+              <template #header>
+                Edit Prop "{{envEditObject.editProp}}"
+              </template>
+              <vs-input @keypress.enter="saveEnv" v-if="!!envEditObject.editProp" v-model="envEditObject.edit[envEditObject.editProp]"></vs-input>
+            </vs-dialog>
+          </vs-col>
+        </vs-row>
       </div>
     </vs-dialog>
     <vs-dialog blur v-model="showEditNameDialog">
@@ -134,9 +195,15 @@ export default {
       else {
         this.stopShowingDetails()
       }
+    },
+    navbarItem (newVal) {
+      if (newVal?.endsWith('env')) {
+        this.fetchEnvVars()
+      }
     }
   },
-  mounted() {
+  created() {
+    this.navbarItem = `${this.details.uuid}settings`
   },
   updated() {
     if (this.$refs.logContainer)
@@ -202,12 +269,43 @@ export default {
       this.$balena.models.device.rename(this.details.uuid, this.details['device_name']).then(() => {
         this.showEditNameDialog = false
       })
+    },
+    fetchEnvVars() {
+      this.fetchingEnvVars = true
+      this.$balena.models.device.envVar.getAllByDevice(this.details.uuid, {}).then(res => {
+        this.envVars = res
+      })
+    },
+    saveEnv() {
+      this.envEditObject.editActive = false
+      this.fetchingEnvVars = true
+      this.$balena.models.device.envVar.set(this.details.uuid, this.envEditObject.edit.name, this.envEditObject.edit.value).then(() => {
+        this.fetchEnvVars()
+      })
+    },
+    removeEnv(env) {
+      this.$balena.models.device.envVar.remove(this.details.uuid, env.name).then(() => {
+        this.fetchEnvVars()
+      })
+    },
+    saveNewEnv() {
+      this.$balena.models.device.envVar.set(this.details.uuid, this.newEnvObject.name, this.newEnvObject.value).then(() => {
+        this.fetchEnvVars()
+        this.newEnvObject.name = undefined
+        this.newEnvObject.value = undefined
+      })
     }
   },
   computed: {
     ...mapGetters({
       getSelectedDevice: 'getSelectedDevice'
-    })
+    }),
+    sortedEnvVars() {
+      if (!this.envVars) return []
+      return [...this.envVars].sort((a, b) => {
+        return this.$moment(a['created_at']) - this.$moment(b['created_at'])
+      })
+    }
   },
   props: {
     details: {required: true}
@@ -217,7 +315,19 @@ export default {
       interval: undefined,
       showDetailsDialog: false,
       showEditNameDialog: false,
+      envVars: undefined,
+      fetchingEnvVars: false,
       logs: [],
+      envEditObject: {
+        editActive: false,
+        edit: null,
+        editProp: undefined
+      },
+      newEnvObject: {
+        name: undefined,
+        value: undefined
+      },
+      navbarItem: undefined,
       logger: undefined,
       colors: ['#0C059A', '#B36E2E', '#C0BC0D', '#9F4081', '#2363CC', '#EB5E7E', '#AAA723', '#D286A8', '#318747']
     }
@@ -225,6 +335,12 @@ export default {
 }
 </script>
 
+<style lang="scss" scoped>
+#device-details-navbar {
+  position: relative;
+  margin-bottom: .5rem;
+}
+</style>
 <style lang="scss">
 .vs-dialog--scroll .vs-dialog__content {
   max-height: 80vh !important;
