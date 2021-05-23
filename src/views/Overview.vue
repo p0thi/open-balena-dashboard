@@ -22,6 +22,9 @@
       Home
     </vs-sidebar-item>
 
+    <div class="sidebar-descriptor">
+      Application displays
+    </div>
 
     <vs-sidebar-item id="about" to="/devices">
       <template #icon>
@@ -31,8 +34,15 @@
     </vs-sidebar-item>
 
     <div class="sidebar-descriptor">
-      Application displays
+      User
     </div>
+
+    <vs-sidebar-item id="about" to="/user">
+      <template #icon>
+        <i class="bx bx-user"></i>
+      </template>
+      User
+    </vs-sidebar-item>
 
     <template #footer>
       <vs-row justify="space-between">

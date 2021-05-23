@@ -8,13 +8,19 @@
             <h3>Login</h3>
           </template>
           <template #text>
-            <div class="center content-inputs">
-              <vs-input v-model="email" label-placeholder="E-Mail" />
-              <vs-input @keypress.enter="login" v-model="password" type="password" label-placeholder="Password" />
+            <div class="content-inputs">
+              <div v-if="useToken">
+                <vs-input v-model="token" type="password" label-placeholder="API Token" />
+              </div>
+              <div v-else>
+                <vs-input v-model="email" label-placeholder="E-Mail" />
+                <vs-input @keypress.enter="login" v-model="password" type="password" label-placeholder="Password" />
+              </div>
               <vs-input v-model="api" type="url" label-placeholder="API Url" />
             </div>
           </template>
           <template #buttons>
+            <vs-checkbox v-model="useToken">Use token to login</vs-checkbox>
             <vs-checkbox v-model="rememberEmail">remember E-Mail</vs-checkbox>
             <vs-button @click="login" primary>Login</vs-button>
           </template>
@@ -36,6 +42,7 @@ export default {
     if (this.email) {
       this.rememberEmail = true
     }
+    this.useToken = !!localStorage.getItem('use_token_login')
   },
   methods: {
     ...mapMutations({
@@ -60,7 +67,18 @@ export default {
         localStorage.removeItem('user_email')
       }
 
-      this.$balena?.auth.login({email: this.email, password: this.password}).then(() => {
+      if (this.useToken) {
+        localStorage.setItem('use_token_login', this.useToken)
+      }
+      else {
+        localStorage.removeItem('user_email')
+      }
+
+      const loginPromise = this.useToken ?
+          this.$balena?.auth.loginWithToken(this.token) :
+          this.$balena?.auth.login({email: this.email, password: this.password})
+
+      loginPromise.then(() => {
         this.setApiUrl(this.api)
         this.setLoggedInStatus(true)
         this.$balena?.models.application.getAllWithDeviceServiceDetails().then(resp => {
@@ -79,7 +97,9 @@ export default {
       email: undefined,
       rememberEmail: false,
       password: undefined,
-      api: undefined
+      token: undefined,
+      api: undefined,
+      useToken: false
     }
   }
 }
