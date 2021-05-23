@@ -19,6 +19,9 @@ export default {
     DeviceTile
   },
   created() {
+    if (!this.getSelectedApp) {
+      this.$router.push('home')
+    }
     this.interval = setInterval(this.fetchDevicesOfSelectedApp, 20000)
     this.fetchDevicesOfSelectedApp()
   },

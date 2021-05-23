@@ -54,6 +54,7 @@ export default new Vuex.Store({
     },
     getSelectedApp: state => {
       // return state.selectedApp
+      if (!state.applications || !state.selectedApp) return null
       return state.applications?.find(item => item.uuid === state.selectedApp.uuid)
     },
     getSelectedAppDevices: state => {
@@ -89,13 +90,15 @@ export default new Vuex.Store({
     fetchDevicesOfSelectedApp({state, commit}) {
       if (!state.selectedApp) return
       this.$app.$balena?.models.device.getAllByApplication(state.selectedApp.id, {
-
+        $expand: 'is_running__release'
       }).then(res => {
         commit('setSelectedAppDevices', res)
       })
     },
     fetchDevice({commit}, uuid) {
-      this.$app.$balena?.models.device.getWithServiceDetails(uuid, {}).then(res => {
+      this.$app.$balena?.models.device.getWithServiceDetails(uuid, {
+        $expand: ['is_of__device_type', 'is_running__release']
+      }).then(res => {
         console.log('fetching device...')
         commit('setSelectedDevice', res)
       })

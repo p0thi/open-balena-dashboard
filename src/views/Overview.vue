@@ -22,22 +22,24 @@
       Home
     </vs-sidebar-item>
 
-    <div class="sidebar-descriptor">
-      Application displays
-    </div>
+    <div v-if="!!selectedApp">
+      <div class="sidebar-descriptor">
+        Application {{selectedApp['app_name']}}
+      </div>
 
-    <vs-sidebar-item id="about" to="/devices">
-      <template #icon>
-        <i class="bx bx-home"></i>
-      </template>
-      Devices
-    </vs-sidebar-item>
+      <vs-sidebar-item id="about" to="/devices">
+        <template #icon>
+          <i class="bx bx-home"></i>
+        </template>
+        Devices
+      </vs-sidebar-item>
+    </div>
 
     <div class="sidebar-descriptor">
       User
     </div>
 
-    <vs-sidebar-item id="about" to="/user">
+    <vs-sidebar-item id="user" to="/user">
       <template #icon>
         <i class="bx bx-user"></i>
       </template>
@@ -57,7 +59,7 @@
 </template>
 
 <script>
-import {mapActions, mapMutations} from "vuex";
+import {mapActions, mapGetters, mapMutations} from "vuex";
 
 export default {
   name: "Overview",
@@ -85,6 +87,11 @@ export default {
       this.checkLoginStatus()
     }
   },
+  computed: {
+    ...mapGetters({
+      selectedApp: 'getSelectedApp'
+    })
+  },
   data () {
     return {
       active: 'home',
@@ -98,5 +105,10 @@ export default {
 <style scoped>
 .overview {
   padding-top: 3rem;
+}
+.sidebar-descriptor {
+  margin-left: 1.3rem;
+  margin-top: .9rem;
+  font-weight: bold;
 }
 </style>

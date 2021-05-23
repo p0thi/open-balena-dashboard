@@ -1,16 +1,16 @@
 <template>
-  <vs-card type="3">
-    <template #title>
-      <h3>{{ details['app_name'] }}</h3>
-      <h4>{{ details['owns__device'].length}}</h4>
-    </template>
-    <template #img>
-      <img :src="details['is_for__device_type'][0].logo" alt="">
-    </template>
-    <template #text>
-        <p>{{details['is_for__device_type'][0]['is_of__cpu_architecture'][0]['slug']}}</p>
-    </template>
-  </vs-card>
+  <div class="custom-tile">
+    <vs-row justify="space-around">
+      <vs-col w="4">
+        <img :src="details['is_for__device_type'][0].logo" alt="">
+      </vs-col>
+      <vs-col w="6">
+        <h2>Name: {{ details['app_name'] }}</h2>
+        <h3>Devices: {{ details['owns__device'].length}}</h3>
+        <p>Arch: {{details['is_for__device_type'][0]['is_of__cpu_architecture'][0]['slug']}}</p>
+      </vs-col>
+    </vs-row>
+  </div>
 </template>
 
 <script>
@@ -35,5 +35,7 @@ export default {
 </script>
 
 <style scoped>
-
+  img {
+    width: 100%;
+  }
 </style>

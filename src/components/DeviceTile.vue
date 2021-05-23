@@ -1,19 +1,50 @@
 <template>
   <div>
-    <vs-card @click="showDetailsDialog = !showDetailsDialog">
-      <template #title>
-        <h2>{{ details['device_name'] }}</h2>
-      </template>
-      <template #text>
-        <p>Online/VPN Connected: {{ details['is_online'] }}, {{ details['is_connected_to_vpn'] }}</p>
-        <p>IP Adress: {{ details['ip_address'] }}</p>
-        <p>Status / progress: {{ details['overall_status']}} / {{ details['overall_progress'] }}</p>
-        <p>UUID: {{ details['uuid'] }}</p>
-        <p>Last connectivity event: {{ details['last_connectivity_event'] | moment("DD.MM.YYYY, HH:mm:ss") }}</p>
-        <p>Created at: {{ details['created_at'] | moment("DD.MM.YYYY, HH:mm:ss") }}</p>
-        <vs-button @click="restartDevice">Restart</vs-button>
-      </template>
-    </vs-card>
+    <div class="custom-tile" @click.stop="showDetailsDialog = !showDetailsDialog">
+      <h2>{{ details['device_name'] }}</h2>
+      <div class="grid">
+
+        <vs-row justify="space-between">
+          <vs-col w="6">Online / VPN Connected:</vs-col>
+          <vs-col class="right" w="6">
+            <span>
+              <i class="bx bx-check-circle bx-sm green" v-if="details['is_online']"></i>
+              <i class="bx bx-x-circle bx-sm red" v-else></i>
+            </span>
+            <span>
+              <i class="bx bx-check-circle bx-sm green" v-if="details['is_connected_to_vpn']"></i>
+              <i class="bx bx-x-circle bx-sm red" v-else></i>
+            </span>
+          </vs-col>
+        </vs-row>
+
+        <vs-row justify="space-between">
+          <vs-col w="6">IP Adress:</vs-col>
+          <vs-col class="right" w="6">{{ details['ip_address'] }}</vs-col>
+        </vs-row>
+
+        <vs-row justify="space-between">
+          <vs-col w="6">Status / progress:</vs-col>
+          <vs-col class="right" w="6">{{ details['overall_status']}} {{details['overall_progress'] ? '/' : ''}} {{ details['overall_progress'] }}</vs-col>
+        </vs-row>
+
+        <vs-row justify="space-between">
+          <vs-col w="6">OS variant:</vs-col>
+          <vs-col class="right" w="6">{{ details['os_variant'] }}</vs-col>
+        </vs-row>
+
+        <vs-row justify="space-between">
+          <vs-col w="6">Last connectivity event:</vs-col>
+          <vs-col class="right" w="6">{{ details['last_connectivity_event'] | moment("DD.MM.YYYY, HH:mm:ss") }}</vs-col>
+        </vs-row>
+
+        <vs-row justify="space-between">
+          <vs-col w="6">Created at:</vs-col>
+          <vs-col class="right" w="6">{{ details['created_at'] | moment("DD.MM.YYYY, HH:mm:ss") }}</vs-col>
+        </vs-row>
+
+      </div>
+    </div>
     <vs-dialog overflow-hidden scroll full-screen v-model="showDetailsDialog">
       <template #header>
         <h4>{{ details['device_name'] }}</h4>
@@ -21,17 +52,97 @@
           <i class="bx bx-edit"></i>
         </vs-button>
       </template>
+      <vs-navbar id="device-details-navbar" v-model="navbarItem">
+        <vs-navbar-item :active="navbarItem === `${details.uuid}settings`" :id="`${details.uuid}settings`">
+          Settings
+        </vs-navbar-item>
+        <vs-navbar-item :active="navbarItem === `${details.uuid}env`" :id="`${details.uuid}env`">
+          Environment Variables
+        </vs-navbar-item>
+      </vs-navbar>
       <div v-if="getSelectedDevice">
-        <vs-navbar id="device-details-navbar" v-model="navbarItem">
-          <vs-navbar-item :active="navbarItem === `${details.uuid}settings`" :id="`${details.uuid}settings`">
-            Settings
-          </vs-navbar-item>
-          <vs-navbar-item :active="navbarItem === `${details.uuid}env`" :id="`${details.uuid}env`">
-            Environment Variables
-          </vs-navbar-item>
-        </vs-navbar>
         <vs-row v-if="navbarItem === `${details.uuid}settings`">
-          <vs-col lg="6" sm="12">
+          <vs-col lg="6" sm="12" style="padding: 1.5%">
+            <div class="center">
+              <vs-button @click="rebootDevice" :upload="rebooting" border>Reboot Device</vs-button>
+              <vs-button @click="restartDevice" :upload="restarting" border>Restart All Services</vs-button>
+            </div>
+            <hr>
+            <div class="detail-list">
+              <vs-row justify="space-around">
+                <vs-col w="3" class="detail-container">
+                  <div>STATUS</div>
+                  <div v-if="details['is_online']">
+                    <i class="bx bx-check-circle green"></i>&nbsp;Online
+                  </div>
+                  <div v-else>
+                    <i class="bx bx-x-circle red"></i>&nbsp;Offline
+                  </div>
+                </vs-col>
+
+                <vs-col w="3" class="detail-container">
+                  <div>UUID</div>
+                  <div>{{ details['uuid'].substring(0, 7) }}</div>
+                </vs-col>
+
+                <vs-col w="3" class="detail-container">
+                  <div>TYPE</div>
+                  <div>
+                    <span style="vertical-align: middle"><img class="device-type-image" :src="deviceType.logo" alt=""></span>
+                    <span style="vertical-align: middle">&nbsp;{{deviceType.name}}</span>
+                  </div>
+                </vs-col>
+              </vs-row>
+
+              <vs-row justify="space-around">
+                <vs-col w="3" class="detail-container" v-if="details['is_online']">
+                  <div>ONLINE SINCE</div>
+                  <div>{{getSelectedDevice['last_connectivity_event'] | moment('calendar')}}</div>
+                </vs-col>
+                <vs-col w="3" class="detail-container" v-else>
+                  <div>LAST SEEN (VPN)</div>
+                  <div>{{getSelectedDevice['last_vpn_event'] | moment('calendar')}}</div>
+                </vs-col>
+
+                <vs-col w="3" class="detail-container">
+                  <div>HOST OS VERSION</div>
+                  <div>
+                    <div>{{getSelectedDevice['os_version']}}</div>
+                    <div class="chip">{{getSelectedDevice['os_variant']}}</div>
+                  </div>
+                </vs-col>
+
+                <vs-col w="3" class="detail-container">
+                  <div>SUPERVISOR VERSION</div>
+                  <div>{{getSelectedDevice['supervisor_version']}}</div>
+                </vs-col>
+              </vs-row>
+
+              <vs-row justify="space-around">
+                <vs-col w="3" class="detail-container" v-if="details['is_online']">
+                  <div>CURRENT RELEASE</div>
+                  <div>{{currentRelease.commit.substring(0, 7)}}</div>
+                </vs-col>
+                <vs-col w="3" class="detail-container" v-else>
+                  <div>LAST SEEN (VPN)</div>
+                  <div>{{getSelectedDevice['last_vpn_event'] | moment('calendar')}}</div>
+                </vs-col>
+
+                <vs-col w="3" class="detail-container">
+                  <div>LOCAL IP ADDRESS</div>
+                  <div>
+                    <div>{{getSelectedDevice['ip_address']}}</div>
+                  </div>
+                </vs-col>
+
+                <vs-col w="3" class="detail-container">
+                  <div>MAC ADDRESS</div>
+                  <div>{{getSelectedDevice['mac_address']}}</div>
+                </vs-col>
+              </vs-row>
+
+            </div>
+            <hr>
             <vs-table>
               <template #thead>
                 <vs-tr>
@@ -41,7 +152,7 @@
                 </vs-tr>
               </template>
               <template #tbody>
-                <vs-tr v-for="(service, name, i) in getSelectedDevice['current_services']" :key="i" :data="service[0]">
+                <vs-tr v-for="(service, name, i) in sortedServices" :key="i" :data="service[0]">
                   <vs-td>
                     <div class="service-list-name" :style="`background-color: ${colors[service[0]['service_id']]}`">
                       {{name}}
@@ -64,7 +175,7 @@
               </template>
             </vs-table>
           </vs-col>
-          <vs-col lg="6" sm="12">
+          <vs-col lg="6" sm="12" style="padding: 1.5%">
             <div class="hardware-stats">
               <vs-row class="spacing-row">
 
@@ -111,11 +222,14 @@
 
               </vs-row>
             </div>
-            <div class="log-container" ref="logContainer">
-              <div v-for="(line, index) in logs" :key="`line${index}`">
-                <span class="timestamp">{{ line.timestamp | moment("DD.MM.YY - HH:mm:ss") }}:</span>
-                <span class="service" :style="`background-color: ${colors[line.serviceId]}`">{{ getServiceNameByServiceId(line.serviceId) }}</span>
-                <span class="message" :class="{'is-system': line.isSystem, 'is-error': line.isStdErr}">{{ line.message }}</span>
+            <div class="log-container">
+              <h4>Logs</h4>
+              <div ref="logContainer">
+                <div v-for="(line, index) in logs" :key="`line${index}`">
+                  <span class="timestamp">{{ line.timestamp | moment("DD.MM.YY - HH:mm:ss") }}:</span>
+                  <span class="service" :style="`background-color: ${colors[line.serviceId]}`">{{ getServiceNameByServiceId(line.serviceId) }}</span>
+                  <span class="message" :class="{'is-system': line.isSystem, 'is-error': line.isStdErr}">{{ line.message }}</span>
+                </div>
               </div>
             </div>
           </vs-col>
@@ -170,6 +284,7 @@
                 Edit Prop "{{envEditObject.editProp}}"
               </template>
               <vs-input @keypress.enter="saveEnv" v-if="!!envEditObject.editProp" v-model="envEditObject.edit[envEditObject.editProp]"></vs-input>
+              <vs-button @click="saveEnv">Save</vs-button>
             </vs-dialog>
           </vs-col>
         </vs-row>
@@ -239,12 +354,23 @@ export default {
       this.logger?.unsubscribe()
       clearInterval(this.interval)
     },
+    rebootDevice () {
+      this.rebooting = true
+      this.$balena.models.device.reboot(this.details.uuid).finally(() => {
+        this.rebooting = false
+      })
+    },
     restartDevice () {
-      for (const value of Object.values(this.details['current_services'])) {
+      const promises = []
+      this.restarting = true
+      for (const value of Object.values(this.sortedServices)) {
         for (const service of value) {
-          this.$balena?.models.device.restartService(this.details.uuid, service['image_id'])
+          promises.push(this.$balena?.models.device.restartService(this.details.uuid, service['image_id']))
         }
       }
+      Promise.allSettled(promises).then(() => {
+        this.restarting = false
+      })
     },
     startService(imageId) {
       this.$balena.models.device.startService(this.details.uuid, imageId)
@@ -300,11 +426,26 @@ export default {
     ...mapGetters({
       getSelectedDevice: 'getSelectedDevice'
     }),
+    deviceType() {
+      return this.getSelectedDevice['is_of__device_type'][0]
+    },
+    currentRelease() {
+      return this.getSelectedDevice['is_running__release'][0]
+    },
     sortedEnvVars() {
       if (!this.envVars) return []
       return [...this.envVars].sort((a, b) => {
         return this.$moment(a['created_at']) - this.$moment(b['created_at'])
       })
+    },
+    sortedServices() {
+      return Object.keys(this.getSelectedDevice['current_services']).sort().reduce(
+          (obj, key) => {
+            obj[key] = this.getSelectedDevice['current_services'][key];
+            return obj;
+          },
+          {}
+      )
     }
   },
   props: {
@@ -312,6 +453,9 @@ export default {
   },
   data () {
     return {
+      restarting: false,
+      rebooting: false,
+
       interval: undefined,
       showDetailsDialog: false,
       showEditNameDialog: false,
@@ -336,18 +480,76 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.chip {
+  border-radius: .7em;
+  padding: .15em .5em;
+  background-color: #8bbeff;
+  width: fit-content;
+}
 #device-details-navbar {
   position: relative;
   margin-bottom: .5rem;
 }
+.device-type-image {
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
+  object-position: center center;
+}
+.right {
+  text-align: end;
+}
+.grid {
+  > * {
+    margin: .5rem 0;
+  }
+}
+
+i {
+  &.green {
+    color: green;
+  }
+  &.red {
+    color: red;
+  }
+}
+hr {
+  margin: 2rem 7%;
+  height: 1px;
+  border: none;
+  background-color: #566572;
+}
+
+.detail-list {
+  > * {
+    margin: 1.5em 0;
+  }
+  .detail-container {
+    & > *:nth-child(1) {
+      font-weight: bolder;
+      margin-bottom: .25em;
+    }
+    & > *:last-child {
+      font-size: .8em;
+    }
+  }
+}
 </style>
 <style lang="scss">
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
 .vs-dialog--scroll .vs-dialog__content {
   max-height: 80vh !important;
 }
 .service-list-name {
   color: white;
   font-size: 1.2rem;
+  margin: .1rem .5rem;
+  text-align: center;
 }
 
 .spacing-row {
@@ -377,29 +579,31 @@ export default {
 }
 
 .log-container {
-  text-align: start;
-  background-color: #2c3e50;
-  height: 30vh;
-  overflow: auto;
-  line-height: 1.3rem;
+  > div {
+    text-align: start;
+    background-color: #2c3e50;
+    height: 30vh;
+    overflow: auto;
+    line-height: 1.3rem;
 
-  .timestamp {
-    color: grey;
-    letter-spacing: .05rem;
-  }
-  .service {
-    color: white;
-    padding: .3rem;
-    margin: 0 .5rem;
-  }
-  .message {
-    color: #6ead21;
-  }
-  .is-system {
-    color: #cd9020;
-  }
-  is-error {
-    color: #de1f1f;
+    .timestamp {
+      color: grey;
+      letter-spacing: .05rem;
+    }
+    .service {
+      color: white;
+      padding: .3rem;
+      margin: 0 .5rem;
+    }
+    .message {
+      color: #6ead21;
+    }
+    .is-system {
+      color: #cd9020;
+    }
+    is-error {
+      color: #de1f1f;
+    }
   }
 }
 </style>

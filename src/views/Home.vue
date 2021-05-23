@@ -1,7 +1,11 @@
 <template>
 <div>
   <div v-if="!!getApplications">
-    <ApplicationTile @click.native="selectApp(application)" v-for="application in getApplications" :key="application['uuid']" :details="application"></ApplicationTile>
+    <vs-row>
+      <vs-col lg="4" sm="6" xs="12" v-for="application in getApplications" :key="application['uuid']">
+        <ApplicationTile @click.native="selectApp(application)" :details="application"></ApplicationTile>
+      </vs-col>
+    </vs-row>
   </div>
 </div>
 </template>
