@@ -28,7 +28,9 @@ export default {
     selectApp(application) {
       console.log('app selected', application)
       this.setSelectedApp(application)
-      this.$router.push('/devices')
+      this.$router.push({
+        path: '/devices'
+      })
     }
   },
   computed: {

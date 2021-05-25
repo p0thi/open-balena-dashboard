@@ -36,8 +36,15 @@ export default {
 </script>
 
 <style lang="scss">
+.vertical-align-middle {
+  vertical-align: middle;
+}
+.mt-2 {
+  margin-top: 2em;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
+  color: $dark;
 }
 .custom-tile {
   margin: 2rem;

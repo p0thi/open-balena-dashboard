@@ -260,7 +260,8 @@
                 <vs-tr v-for="envVar in sortedEnvVars" :key="envVar.id" :data="envVar">
                   <vs-td>{{envVar.name}}</vs-td>
                   <vs-td edit @click="envEditObject.edit = envVar; envEditObject.editProp = 'value'; envEditObject.editActive = true">
-                    {{envVar.value}}
+                    <i class="bx bx-edit bx-xs vertical-align-middle"></i>
+                    <span class="vertical-align-middle"> {{envVar.value}}</span>
                   </vs-td>
                   <vs-td>
                     <vs-button @click="removeEnv(envVar)" icon flat><i class="bx bx-trash"></i></vs-button>
@@ -480,6 +481,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+h2 {
+  color: $primary;
+}
 .chip {
   border-radius: .7em;
   padding: .15em .5em;

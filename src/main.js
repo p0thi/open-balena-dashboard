@@ -20,7 +20,14 @@ Vue.config.productionTip = false
 // Vue.prototype.$balena = undefined
 
 Vue.use(Vuesax, {
-
+  colors: {
+    primary:'#ff8000',
+    secondary: '#00d2ea',
+    success:'rgb(23, 201, 100)',
+    danger:'rgb(242, 19, 93)',
+    warning:'rgb(255, 130, 0)',
+    dark:'#2a506f'
+  }
 })
 
 Vue.use(VueAxios, axios)

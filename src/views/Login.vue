@@ -62,7 +62,7 @@ export default {
       this.$balena = balena
 
       if (this.rememberEmail) {
-        localStorage.setItem('user_email', this.email)
+        localStorage.setItem('user_email', this.email || " ")
       }
       else {
         localStorage.removeItem('user_email')
@@ -72,7 +72,7 @@ export default {
         localStorage.setItem('use_token_login', this.useToken)
       }
       else {
-        localStorage.removeItem('user_email')
+        localStorage.setItem('user_email', " ")
       }
 
       const loginPromise = this.useToken ?

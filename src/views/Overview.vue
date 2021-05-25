@@ -1,17 +1,21 @@
 <template>
 <div class="overview">
-  <vs-navbar shadow square center-collapsed >
+  <vs-navbar shadow square fixed center-collapsed >
     <template #left>
       <vs-button @click="activeSidebar = !activeSidebar" flat icon>
         <i class='bx bx-menu'></i>
       </vs-button>
+    </template>
+    <template #default>
+      <h1>{{routeName}}</h1>
     </template>
     <template #right>
       <img id="navbar-logo" src="../assets/full_logo.png" alt="">
     </template>
   </vs-navbar>
   <vs-sidebar
-      absolute
+
+
       v-model="active"
       :open.sync="activeSidebar"
   >
@@ -30,7 +34,7 @@
         Application {{selectedApp['app_name']}}
       </div>
 
-      <vs-sidebar-item id="about" to="/devices">
+      <vs-sidebar-item id="devices" to="/devices">
         <template #icon>
           <i class="bx bx-home"></i>
         </template>
@@ -93,7 +97,10 @@ export default {
   computed: {
     ...mapGetters({
       selectedApp: 'getSelectedApp'
-    })
+    }),
+    routeName () {
+      return this.$route.name
+    }
   },
   data () {
     return {
@@ -106,6 +113,10 @@ export default {
 </script>
 
 <style scoped lang="scss">
+h1 {
+  margin: .3em 0;
+  color: $dark;
+}
 #navbar-logo {
   margin: .4em;
   max-height: 2.3em;
