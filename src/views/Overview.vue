@@ -7,7 +7,7 @@
       </vs-button>
     </template>
     <template #right>
-      <img id="navbar-logo" src="../assets/full_logo.svg" alt="">
+      <img id="navbar-logo" src="../assets/full_logo.png" alt="">
     </template>
   </vs-navbar>
   <vs-sidebar
