@@ -5,7 +5,7 @@
 
         <vs-card>
           <template #title>
-            <h3>Login</h3>
+            <h2>Login</h2>
           </template>
           <template #img>
             <img id="logo" src="../assets/full_logo.png" alt="">
@@ -110,6 +110,9 @@ export default {
 #logo {
   width: 80%;
   padding: 1em 0;
+}
+.content-inputs {
+  margin-top: 1em;
 }
 </style>
 
