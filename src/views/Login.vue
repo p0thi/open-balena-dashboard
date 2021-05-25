@@ -1,11 +1,14 @@
 <template>
   <div class="grid">
-    <vs-row justify="center">
+    <vs-row align="center" justify="center" style="height: 100vh">
       <vs-col lg="2" sm="6" xs="12">
 
-        <vs-card type="1">
+        <vs-card>
           <template #title>
             <h3>Login</h3>
+          </template>
+          <template #img>
+            <img id="logo" src="../assets/full_logo.png" alt="">
           </template>
           <template #text>
             <div class="content-inputs">
@@ -18,8 +21,6 @@
               </div>
               <vs-input v-model="api" type="url" label-placeholder="API Url" />
             </div>
-          </template>
-          <template #buttons>
             <vs-checkbox v-model="useToken">Use token to login</vs-checkbox>
             <vs-checkbox v-model="rememberEmail">remember E-Mail</vs-checkbox>
             <vs-button @click="login" primary>Login</vs-button>
@@ -104,6 +105,13 @@ export default {
   }
 }
 </script>
+
+<style scoped lang="scss">
+#logo {
+  width: 80%;
+  padding: 1em 0;
+}
+</style>
 
 <style>
 .vs-input-content {
