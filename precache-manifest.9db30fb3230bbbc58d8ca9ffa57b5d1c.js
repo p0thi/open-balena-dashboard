@@ -4,8 +4,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/open-balena-dashboard/css/about.91b2a54f.css"
   },
   {
-    "revision": "68ad887028f0da7a798f",
-    "url": "/open-balena-dashboard/css/app.22670584.css"
+    "revision": "fe66591948903e62fea0",
+    "url": "/open-balena-dashboard/css/app.bad9b8ed.css"
   },
   {
     "revision": "507a3aa8457c66b5bba8",
@@ -32,11 +32,11 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/open-balena-dashboard/img/boxicons.dad92ba1.svg"
   },
   {
-    "revision": "ddf9752572f3cec6a94d040749bc4dd2",
-    "url": "/open-balena-dashboard/img/full_logo.ddf97525.svg"
+    "revision": "590204007fa0b7dda2bcb29d16d4bc83",
+    "url": "/open-balena-dashboard/img/full_logo.59020400.png"
   },
   {
-    "revision": "4f6cec61be8e89da9b35a06b64360e78",
+    "revision": "571592f98218dffc00753052434f1366",
     "url": "/open-balena-dashboard/index.html"
   },
   {
@@ -44,8 +44,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/open-balena-dashboard/js/about.172520d1.js"
   },
   {
-    "revision": "68ad887028f0da7a798f",
-    "url": "/open-balena-dashboard/js/app.2fb5606f.js"
+    "revision": "fe66591948903e62fea0",
+    "url": "/open-balena-dashboard/js/app.5979adab.js"
   },
   {
     "revision": "507a3aa8457c66b5bba8",

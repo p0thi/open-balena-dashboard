@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/open-balena-dashboard/precache-manifest.3a5ab725b957039407fc3720b1288cc3.js"
+  "/open-balena-dashboard/precache-manifest.9db30fb3230bbbc58d8ca9ffa57b5d1c.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "open-balena-dashboard"});
