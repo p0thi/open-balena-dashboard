@@ -12,6 +12,7 @@ import VueAxios from "vue-axios";
 import VueMoment from 'vue-moment'
 
 import { getSdk } from "balena-sdk"
+import './registerServiceWorker'
 
 
 

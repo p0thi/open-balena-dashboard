@@ -6,6 +6,9 @@
         <i class='bx bx-menu'></i>
       </vs-button>
     </template>
+    <template #right>
+      <img id="navbar-logo" src="../assets/full_logo.svg" alt="">
+    </template>
   </vs-navbar>
   <vs-sidebar
       absolute
@@ -102,7 +105,11 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+#navbar-logo {
+  margin: .4em;
+  max-height: 2.3em;
+}
 .overview {
   padding-top: 3rem;
 }
